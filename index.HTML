@@ -6,49 +6,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      color: #fff;
-      text-align: center;
-      padding: 50px;
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #81d4fa 0%, #0288d1 55%, #01579b 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
     .container {
-      background: rgba(0,0,0,0.3);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      margin: auto;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      padding: 28px;
+      border-radius: 28px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      letter-spacing: 0.04em;
+      font-size: 1.8rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     input {
-      padding: 10px;
-      width: 70%;
+      flex: 1 1 220px;
+      padding: 14px 16px;
       border: none;
-      border-radius: 5px;
-      margin-bottom: 10px;
+      border-radius: 16px;
+      outline: none;
+      font-size: 1rem;
+      color: #033042;
     }
 
     button {
-      padding: 10px 15px;
+      padding: 14px 20px;
       border: none;
-      border-radius: 5px;
-      background: #fff;
-      color: #333;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #01579b;
+      font-weight: 700;
       cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+      min-width: 130px;
     }
 
     button:hover {
-      background: #ddd;
+      transform: translateY(-1px);
+      background: #e1f5fe;
     }
 
     .weather {
-      margin-top: 20px;
+      margin-top: 24px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .weather h3 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
     }
 
     .temp {
-      font-size: 2em;
-      font-weight: bold;
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 12px 0;
+    }
+
+    .weather p {
+      margin: 8px 0;
+      line-height: 1.5;
+      opacity: 0.92;
+    }
+
+    .hint {
+      margin-top: 12px;
+      opacity: 0.9;
+      font-size: 0.95rem;
     }
   </style>
 </head>
@@ -56,19 +105,72 @@
 
   <div class="container">
     <h2>Weather App</h2>
-    <input type="text" id="city" placeholder="Enter city name">
-    <br>
-    <button onclick="getWeather()">Get Weather</button>
+    <div class="input-row">
+      <input type="text" id="city" placeholder="Enter city name">
+      <button onclick="getWeather()">Get Weather</button>
+    </div>
+    <div class="hint">Try: London, Paris, Tokyo, Mumbai, New York</div>
 
     <div class="weather" id="weatherResult"></div>
   </div>
 
   <script>
-    async function getWeather() {
-      const city = document.getElementById("city").value;
-      const apiKey = "YOUR_API_KEY_HERE"; // <-- Replace this
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+    const mockWeather = {
+      london: {
+        name: "London",
+        country: "GB",
+        main: { temp: 15, humidity: 72 },
+        weather: [{ description: "Light rain" }],
+        wind: { speed: 4.2 }
+      },
+      paris: {
+        name: "Paris",
+        country: "FR",
+        main: { temp: 18, humidity: 65 },
+        weather: [{ description: "Clear skies" }],
+        wind: { speed: 3.6 }
+      },
+      tokyo: {
+        name: "Tokyo",
+        country: "JP",
+        main: { temp: 22, humidity: 60 },
+        weather: [{ description: "Partly cloudy" }],
+        wind: { speed: 2.8 }
+      },
+      mumbai: {
+        name: "Mumbai",
+        country: "IN",
+        main: { temp: 30, humidity: 78 },
+        weather: [{ description: "Humid" }],
+        wind: { speed: 5.1 }
+      },
+      "new york": {
+        name: "New York",
+        country: "US",
+        main: { temp: 20, humidity: 68 },
+        weather: [{ description: "Sunny" }],
+        wind: { speed: 3.9 }
+      }
+    };
 
+    function getMockData(cityKey) {
+      return mockWeather[cityKey] || null;
+    }
+
+    function renderWeather(data) {
+      const resultDiv = document.getElementById("weatherResult");
+      resultDiv.innerHTML = `
+        <h3>${data.name}, ${data.country}</h3>
+        <div class="temp">${data.main.temp}°C</div>
+        <p>${data.weather[0].description}</p>
+        <p>Humidity: ${data.main.humidity}%</p>
+        <p>Wind Speed: ${data.wind.speed} m/s</p>
+      `;
+    }
+
+    async function getWeather() {
+      const city = document.getElementById("city").value.trim();
+      const cityKey = city.toLowerCase();
       const resultDiv = document.getElementById("weatherResult");
 
       if (!city) {
@@ -76,25 +178,13 @@
         return;
       }
 
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.cod !== 200) {
-          resultDiv.innerHTML = "City not found.";
-          return;
-        }
-
-        resultDiv.innerHTML = `
-          <h3>${data.name}, ${data.sys.country}</h3>
-          <div class="temp">${data.main.temp}°C</div>
-          <p>${data.weather[0].description}</p>
-          <p>Humidity: ${data.main.humidity}%</p>
-          <p>Wind Speed: ${data.wind.speed} m/s</p>
-        `;
-      } catch (error) {
-        resultDiv.innerHTML = "Error fetching weather data.";
+      const mockData = getMockData(cityKey);
+      if (mockData) {
+        renderWeather(mockData);
+        return;
       }
+
+      resultDiv.innerHTML = "City not found in mock data. Try London, Paris, Tokyo, Mumbai, or New York.";
     }
   </script>
 
